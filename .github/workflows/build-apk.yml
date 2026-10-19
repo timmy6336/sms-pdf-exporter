@@ -28,13 +28,6 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Diagnose constraintlayout dependency
-        run: |
-          ./gradlew :app:dependencies --configuration debugRuntimeClasspath --no-daemon | grep -i -A2 -B2 constraintlayout || true
-          AAR=$(find ~/.gradle/caches -iname "constraintlayout-2.1.4.aar" 2>/dev/null | head -1)
-          echo "AAR path: $AAR"
-          if [ -n "$AAR" ]; then unzip -l "$AAR"; fi
-
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon
 

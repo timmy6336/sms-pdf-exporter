@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -10,70 +10,61 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/brand_primary"
         android:title="@string/app_name"
-        android:titleTextColor="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:titleTextColor="@android:color/white" />
 
-    <LinearLayout
-        android:id="@+id/permissionGroup"
-        android:layout_width="0dp"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/permissionGroup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/permissionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/permission_needed"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/grantPermissionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/grant_permission" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/permissionText"
+            android:id="@+id/emptyView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/permission_needed"
+            android:layout_height="match_parent"
+            android:text="@string/no_conversations"
             android:textAlignment="center"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone" />
 
-        <Button
-            android:id="@+id/grantPermissionButton"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/conversationList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/grant_permission" />
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/emptyView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="@string/no_conversations"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    </FrameLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/conversationList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
