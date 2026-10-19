@@ -22,9 +22,9 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
+      # GitHub's ubuntu-latest runners already ship a full Android SDK
+      # (ANDROID_HOME is preset) with recent platforms/build-tools and
+      # licenses pre-accepted, so no separate SDK-install action is needed.
       - name: Make gradlew executable
         run: chmod +x gradlew
 
