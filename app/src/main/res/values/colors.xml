@@ -1,0 +1,7 @@
+<resources>
+    <color name="brand_primary">#2E5BFF</color>
+    <color name="brand_primary_dark">#1E3FCC</color>
+    <color name="sent_bubble">#DCE8FF</color>
+    <color name="received_bubble">#F1F1F1</color>
+    <color name="background">#FAFAFA</color>
+</resources>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- No app-private data worth backing up: SMS lives in the system provider, exported PDFs are saved via the user's own Storage Access Framework pick. -->
+</full-backup-content>

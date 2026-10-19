@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">SMS to PDF</string>
+    <string name="export_conversation">Export conversation</string>
+    <string name="no_conversations">No text message conversations found.</string>
+    <string name="permission_needed">This app needs permission to read your messages to export them. Nothing is ever uploaded — everything stays on your phone.</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="all_messages">All messages</string>
+    <string name="date_range">Date range</string>
+    <string name="from_date">From</string>
+    <string name="to_date">To</string>
+    <string name="export_to_pdf">Export to PDF</string>
+    <string name="select_from_date">Select start date</string>
+    <string name="select_to_date">Select end date</string>
+    <string name="exporting">Exporting…</string>
+    <string name="export_done">Saved %1$d messages to PDF.</string>
+    <string name="no_messages_in_range">No messages found in that date range.</string>
+    <string name="open_pdf">Open</string>
+    <string name="share_pdf">Share</string>
+    <string name="export_failed">Couldn\'t export the PDF: %1$s</string>
+    <string name="you">You</string>
+    <string name="messages_count">%1$d messages</string>
+</resources>

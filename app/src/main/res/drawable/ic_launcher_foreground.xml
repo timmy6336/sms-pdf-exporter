@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- A simple page shape standing in for "export to document" -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,22 h30 l10,10 v54 a4,4 0 0,1 -4,4 h-36 a4,4 0 0,1 -4,-4 v-60 a4,4 0 0,1 4,-4 z" />
+    <path
+        android:fillColor="#DCE8FF"
+        android:pathData="M64,22 v10 h10 z" />
+    <path
+        android:fillColor="#2E5BFF"
+        android:pathData="M40,46 h28 v4 h-28 z" />
+    <path
+        android:fillColor="#2E5BFF"
+        android:pathData="M40,58 h28 v4 h-28 z" />
+    <path
+        android:fillColor="#2E5BFF"
+        android:pathData="M40,70 h18 v4 h-18 z" />
+</vector>
