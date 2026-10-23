@@ -19,4 +19,7 @@
     <string name="export_failed">Couldn\'t export the PDF: %1$s</string>
     <string name="you">You</string>
     <string name="messages_count">%1$d messages</string>
+    <string name="placeholder_dash">–</string>
+    <string name="days_since_last_message">Days since last message</string>
+    <string name="day_streak">Day streak</string>
 </resources>

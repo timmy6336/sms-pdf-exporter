@@ -60,6 +60,23 @@ class ConversationDetailActivity : AppCompatActivity() {
 
         binding.openPdfButton.setOnClickListener { openPdf() }
         binding.sharePdfButton.setOnClickListener { sharePdf() }
+
+        loadStats()
+    }
+
+    private fun loadStats() {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val timestamps = SmsRepository.getAllMessageTimestamps(applicationContext, threadId)
+                MessageStats.compute(timestamps)
+            }
+            if (result == null) {
+                binding.statsRow.visibility = View.GONE
+                return@launch
+            }
+            binding.daysSinceLastMessageValue.text = result.daysSinceLastMessage.toString()
+            binding.streakValue.text = result.streakDays.toString()
+        }
     }
 
     private fun pickDate(isFrom: Boolean) {

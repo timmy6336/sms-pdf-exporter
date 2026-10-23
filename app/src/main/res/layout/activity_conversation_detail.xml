@@ -37,6 +37,65 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="20dp" />
 
+            <LinearLayout
+                android:id="@+id/statsRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="#F1F1F1"
+                android:padding="12dp"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/daysSinceLastMessageValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder_dash"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/days_since_last_message"
+                        android:textSize="12sp"
+                        android:textColor="#666666"
+                        android:textAlignment="center" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/streakValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder_dash"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/day_streak"
+                        android:textSize="12sp"
+                        android:textColor="#666666"
+                        android:textAlignment="center" />
+                </LinearLayout>
+
+            </LinearLayout>
+
             <RadioGroup
                 android:id="@+id/rangeGroup"
                 android:layout_width="match_parent"

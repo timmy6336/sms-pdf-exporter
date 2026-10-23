@@ -116,6 +116,41 @@ object SmsRepository {
         return (sms + mms).sortedBy { it.date }
     }
 
+    /**
+     * Every message timestamp (millis) for a thread across the entire
+     * history, from both tables — used for the "days since"/"streak" stats,
+     * which need the whole conversation regardless of any export date range.
+     * Skips the per-row MMS part/addr lookups getMmsMessages does, since
+     * only the date matters here.
+     */
+    fun getAllMessageTimestamps(context: Context, threadId: Long): List<Long> {
+        val timestamps = mutableListOf<Long>()
+
+        context.contentResolver.query(
+            Telephony.Sms.CONTENT_URI,
+            arrayOf(Telephony.Sms.DATE),
+            "${Telephony.Sms.THREAD_ID} = ?",
+            arrayOf(threadId.toString()),
+            null
+        )?.use { c ->
+            val dateIdx = c.getColumnIndexOrThrow(Telephony.Sms.DATE)
+            while (c.moveToNext()) timestamps += c.getLong(dateIdx)
+        }
+
+        context.contentResolver.query(
+            Telephony.Mms.CONTENT_URI,
+            arrayOf(Telephony.Mms.DATE),
+            "${Telephony.Mms.THREAD_ID} = ?",
+            arrayOf(threadId.toString()),
+            null
+        )?.use { c ->
+            val dateIdx = c.getColumnIndexOrThrow(Telephony.Mms.DATE)
+            while (c.moveToNext()) timestamps += c.getLong(dateIdx) * 1000L
+        }
+
+        return timestamps
+    }
+
     private fun getSmsMessages(context: Context, threadId: Long, fromMillis: Long?, toMillis: Long?): List<SmsMessage> {
         val selectionParts = mutableListOf("${Telephony.Sms.THREAD_ID} = ?")
         val args = mutableListOf(threadId.toString())
