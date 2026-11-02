@@ -140,12 +140,42 @@
                     android:text="@string/to_date" />
             </LinearLayout>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/export_format"
+                android:textColor="#666666"
+                android:textSize="12sp" />
+
+            <RadioGroup
+                android:id="@+id/formatGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/pdfFormatRadio"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/format_pdf"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/textFormatRadio"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/format_text" />
+            </RadioGroup>
+
             <Button
                 android:id="@+id/exportButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:text="@string/export_to_pdf" />
+                android:layout_marginTop="16dp"
+                android:text="@string/export_button" />
 
             <ProgressBar
                 android:id="@+id/exportProgress"

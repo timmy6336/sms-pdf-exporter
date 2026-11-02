@@ -8,11 +8,14 @@
     <string name="date_range">Date range</string>
     <string name="from_date">From</string>
     <string name="to_date">To</string>
-    <string name="export_to_pdf">Export to PDF</string>
+    <string name="export_format">Export format</string>
+    <string name="format_pdf">PDF</string>
+    <string name="format_text">Plain text (.txt)</string>
+    <string name="export_button">Export</string>
     <string name="select_from_date">Select start date</string>
     <string name="select_to_date">Select end date</string>
     <string name="exporting">Exporting…</string>
-    <string name="export_done">Saved %1$d messages to PDF.</string>
+    <string name="export_done">Saved %1$d messages.</string>
     <string name="no_messages_in_range">No messages found in that date range.</string>
     <string name="open_pdf">Open</string>
     <string name="share_pdf">Share</string>

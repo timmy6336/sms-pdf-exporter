@@ -31,10 +31,20 @@ class ConversationDetailActivity : AppCompatActivity() {
     private var fromMillis: Long? = null
     private var toMillis: Long? = null
     private var lastSavedUri: Uri? = null
+    private var lastSavedMimeType: String = "application/pdf"
+    private var exportFormatIsPdf: Boolean = true
 
+    // A fixed-mimeType CreateDocument contract can't switch between PDF and
+    // text at launch time, so the create-document Intent is built by hand
+    // instead, with whichever mime type/filename the selected format needs.
     private val createDocumentLauncher = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri -> uri?.let { runExport(it) } }
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uri = result.data?.data
+        if (result.resultCode == RESULT_OK && uri != null) {
+            runExport(uri)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,9 +132,20 @@ class ConversationDetailActivity : AppCompatActivity() {
             return
         }
 
+        exportFormatIsPdf = binding.pdfFormatRadio.isChecked
+        val mimeType = if (exportFormatIsPdf) "application/pdf" else "text/plain"
+        val extension = if (exportFormatIsPdf) "pdf" else "txt"
+
         val safeName = displayName.filter { it.isLetterOrDigit() || it == ' ' }.trim().ifBlank { "conversation" }
         val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(System.currentTimeMillis())
-        createDocumentLauncher.launch("SMS_${safeName.replace(' ', '_')}_$stamp.pdf")
+        val filename = "SMS_${safeName.replace(' ', '_')}_$stamp.$extension"
+
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = mimeType
+            putExtra(Intent.EXTRA_TITLE, filename)
+        }
+        createDocumentLauncher.launch(intent)
     }
 
     private fun runExport(uri: Uri) {
@@ -146,14 +167,25 @@ class ConversationDetailActivity : AppCompatActivity() {
                         "all messages"
                     }
                     contentResolver.openOutputStream(uri)?.use { out ->
-                        PdfExporter.export(
-                            outputStream = out,
-                            conversationLabel = displayName,
-                            rangeDescription = rangeDescription,
-                            messages = messages,
-                            selfLabel = getString(R.string.you),
-                            resolveName = { address -> SmsRepository.resolveDisplayName(applicationContext, address) }
-                        )
+                        if (exportFormatIsPdf) {
+                            PdfExporter.export(
+                                outputStream = out,
+                                conversationLabel = displayName,
+                                rangeDescription = rangeDescription,
+                                messages = messages,
+                                selfLabel = getString(R.string.you),
+                                resolveName = { address -> SmsRepository.resolveDisplayName(applicationContext, address) }
+                            )
+                        } else {
+                            TextExporter.export(
+                                outputStream = out,
+                                conversationLabel = displayName,
+                                rangeDescription = rangeDescription,
+                                messages = messages,
+                                selfLabel = getString(R.string.you),
+                                resolveName = { address -> SmsRepository.resolveDisplayName(applicationContext, address) }
+                            )
+                        }
                     }
                     Result.success(messages.size)
                 } catch (e: Exception) {
@@ -167,6 +199,7 @@ class ConversationDetailActivity : AppCompatActivity() {
                     showResult(getString(R.string.no_messages_in_range), showActions = false)
                 } else {
                     lastSavedUri = uri
+                    lastSavedMimeType = if (exportFormatIsPdf) "application/pdf" else "text/plain"
                     showResult(getString(R.string.export_done, count), showActions = true)
                 }
             }.onFailure { e ->
@@ -189,20 +222,20 @@ class ConversationDetailActivity : AppCompatActivity() {
     private fun openPdf() {
         val uri = lastSavedUri ?: return
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/pdf")
+            setDataAndType(uri, lastSavedMimeType)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(this, "No PDF viewer app found to open it.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "No app found to open it.", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun sharePdf() {
         val uri = lastSavedUri ?: return
         val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "application/pdf"
+            type = lastSavedMimeType
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
