@@ -25,4 +25,7 @@
     <string name="placeholder_dash">–</string>
     <string name="days_since_last_message">Days since last message</string>
     <string name="day_streak">Day streak</string>
+    <string name="streak_activity_title">Activity this streak: %1$s – %2$s</string>
+    <string name="combined_label">Combined</string>
+    <string name="stat_row_detail">%1$d messages · %2$s/day avg</string>
 </resources>

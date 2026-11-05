@@ -2,9 +2,16 @@ package com.personal.smspdfexport
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
@@ -76,17 +87,115 @@ class ConversationDetailActivity : AppCompatActivity() {
 
     private fun loadStats() {
         lifecycleScope.launch {
+            val zone = ZoneId.systemDefault()
             val result = withContext(Dispatchers.IO) {
                 val timestamps = SmsRepository.getAllMessageTimestamps(applicationContext, threadId)
-                MessageStats.compute(timestamps)
+                MessageStats.compute(timestamps, zone = zone)
             }
             if (result == null) {
                 binding.statsRow.visibility = View.GONE
+                binding.streakAnalyticsSection.visibility = View.GONE
                 return@launch
             }
             binding.daysSinceLastMessageValue.text = result.daysSinceLastMessage.toString()
             binding.streakValue.text = result.streakDays.toString()
+
+            val start = result.streakStartDate
+            val end = result.streakEndDate
+            if (start == null || end == null) {
+                binding.streakAnalyticsSection.visibility = View.GONE
+                return@launch
+            }
+
+            val analytics = withContext(Dispatchers.IO) {
+                val startMillis = start.atStartOfDay(zone).toInstant().toEpochMilli()
+                val endMillis = end.atTime(LocalTime.MAX).atZone(zone).toInstant().toEpochMilli()
+                val streakMessages = SmsRepository.getMessages(applicationContext, threadId, startMillis, endMillis)
+                StreakAnalyzer.compute(
+                    messages = streakMessages,
+                    streakStartDate = start,
+                    streakEndDate = end,
+                    selfLabel = getString(R.string.you),
+                    resolveName = { address -> SmsRepository.resolveDisplayName(applicationContext, address) },
+                    zone = zone
+                )
+            }
+
+            showStreakAnalytics(start, end, analytics)
         }
+    }
+
+    private fun showStreakAnalytics(start: LocalDate, end: LocalDate, analytics: StreakAnalyzer.Analytics) {
+        val dateLabelFormat = DateTimeFormatter.ofPattern("MMM d")
+        binding.streakSectionTitle.text = getString(
+            R.string.streak_activity_title,
+            start.format(dateLabelFormat),
+            end.format(dateLabelFormat)
+        )
+
+        val senderOrder = analytics.senderBreakdowns.map { it.senderKey }
+        binding.streakChart.setData(analytics.days, analytics.dailyCounts, senderOrder)
+
+        binding.streakLegend.removeAllViews()
+        analytics.senderBreakdowns.forEachIndexed { index, breakdown ->
+            addLegendChip(binding.streakLegend, binding.streakChart.colorForIndex(index), breakdown.label)
+        }
+
+        binding.streakStatsList.removeAllViews()
+        addStatRow(
+            binding.streakStatsList,
+            getString(R.string.combined_label),
+            analytics.combinedTotal,
+            analytics.combinedAveragePerDay,
+            bold = true
+        )
+        analytics.senderBreakdowns.forEach { breakdown ->
+            addStatRow(binding.streakStatsList, breakdown.label, breakdown.total, breakdown.averagePerDay, bold = false)
+        }
+
+        binding.streakAnalyticsSection.visibility = View.VISIBLE
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    private fun addLegendChip(container: LinearLayout, color: Int, label: String) {
+        val chip = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 0, dp(16), dp(4))
+        }
+        val dot = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10)).apply { marginEnd = dp(4) }
+            background = ShapeDrawable(OvalShape()).apply { paint.color = color }
+        }
+        val text = TextView(this).apply {
+            text = label
+            textSize = 12f
+            setTextColor(Color.parseColor("#666666"))
+        }
+        chip.addView(dot)
+        chip.addView(text)
+        container.addView(chip)
+    }
+
+    private fun addStatRow(container: LinearLayout, label: String, total: Int, averagePerDay: Double, bold: Boolean) {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, dp(4), 0, dp(4))
+        }
+        val nameView = TextView(this).apply {
+            text = label
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            if (bold) setTypeface(typeface, Typeface.BOLD)
+        }
+        val statsView = TextView(this).apply {
+            text = getString(R.string.stat_row_detail, total, String.format(Locale.getDefault(), "%.1f", averagePerDay))
+            setTextColor(Color.parseColor("#666666"))
+            textSize = 13f
+        }
+        row.addView(nameView)
+        row.addView(statsView)
+        container.addView(row)
     }
 
     private fun pickDate(isFrom: Boolean) {

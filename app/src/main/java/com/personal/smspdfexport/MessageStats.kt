@@ -8,7 +8,13 @@ import java.time.temporal.ChronoUnit
 /** Activity stats for a conversation, independent of any export date range. */
 object MessageStats {
 
-    data class Result(val daysSinceLastMessage: Long, val streakDays: Int)
+    data class Result(
+        val daysSinceLastMessage: Long,
+        val streakDays: Int,
+        /** Null when streakDays is 0 — there's no active streak window to show. */
+        val streakStartDate: LocalDate?,
+        val streakEndDate: LocalDate?
+    )
 
     /**
      * daysSinceLastMessage: calendar days between today and the most recent
@@ -47,6 +53,9 @@ object MessageStats {
             day = day.minusDays(1)
         }
 
-        return Result(daysSinceLastMessage, streakDays)
+        val streakEndDate = anchor?.takeIf { streakDays > 0 }
+        val streakStartDate = streakEndDate?.minusDays((streakDays - 1).toLong())
+
+        return Result(daysSinceLastMessage, streakDays, streakStartDate, streakEndDate)
     }
 }
