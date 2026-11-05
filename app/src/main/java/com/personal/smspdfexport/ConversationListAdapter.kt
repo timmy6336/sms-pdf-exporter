@@ -1,11 +1,13 @@
 package com.personal.smspdfexport
 
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.DateFormat
+import kotlin.math.abs
 
 class ConversationListAdapter(
     private val onClick: (Conversation) -> Unit
@@ -33,11 +35,25 @@ class ConversationListAdapter(
             conversation.messageCount
         ) + " · " + dateFormat.format(conversation.lastDate)
         holder.itemView.setOnClickListener { onClick(conversation) }
+
+        val initials = conversation.displayName
+            .trim()
+            .split(" ")
+            .filter { it.isNotEmpty() }
+            .take(2)
+            .joinToString("") { it.first().uppercase() }
+            .ifBlank { "?" }
+        holder.avatar.text = initials
+        val color = DailyMessageBarChartView.PALETTE[
+            abs(conversation.displayName.hashCode()) % DailyMessageBarChartView.PALETTE.size
+        ]
+        (holder.avatar.background.mutate() as GradientDrawable).setColor(color)
     }
 
     override fun getItemCount(): Int = items.size
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val avatar: TextView = view.findViewById(R.id.avatar)
         val contactName: TextView = view.findViewById(R.id.contactName)
         val snippet: TextView = view.findViewById(R.id.snippet)
         val meta: TextView = view.findViewById(R.id.meta)

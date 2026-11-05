@@ -2,106 +2,202 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/background">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/brand_primary"
-        android:titleTextColor="@android:color/white" />
+        android:titleTextColor="@color/text_on_primary" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
+            <!-- Header -->
             <TextView
                 android:id="@+id/conversationTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
 
             <TextView
                 android:id="@+id/conversationSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#666666"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="20dp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="16dp" />
 
+            <!-- At a glance -->
             <LinearLayout
-                android:id="@+id/statsRow"
+                android:id="@+id/glanceCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="#F1F1F1"
-                android:padding="12dp"
-                android:layout_marginBottom="20dp">
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:elevation="1dp"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/at_a_glance"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp" />
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/daysSinceLastMessageValue"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/placeholder_dash"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_stat_tile"
+                        android:padding="14dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/streakValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/placeholder_dash"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/accent_warm" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/day_streak"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/days_since_last_message"
-                        android:textSize="12sp"
-                        android:textColor="#666666"
-                        android:textAlignment="center" />
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_stat_tile"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/daysSinceLastMessageValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/placeholder_dash"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/brand_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/days_since_last_message"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            android:textAlignment="center" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
 
-                    <TextView
-                        android:id="@+id/streakValue"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/placeholder_dash"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_stat_tile"
+                        android:padding="14dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/longestStreakValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/placeholder_dash"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/longest_streak"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/day_streak"
-                        android:textSize="12sp"
-                        android:textColor="#666666"
-                        android:textAlignment="center" />
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_stat_tile"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/totalMessagesValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/placeholder_dash"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/total_messages_label"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            android:textAlignment="center" />
+                    </LinearLayout>
                 </LinearLayout>
-
             </LinearLayout>
 
+            <!-- Streak activity chart -->
             <LinearLayout
                 android:id="@+id/streakAnalyticsSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_card"
+                android:elevation="1dp"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone">
 
                 <TextView
@@ -109,7 +205,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp" />
 
                 <com.personal.smspdfexport.DailyMessageBarChartView
                     android:id="@+id/streakChart"
@@ -121,7 +219,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:layout_marginBottom="12dp" />
 
                 <LinearLayout
@@ -132,127 +230,211 @@
 
             </LinearLayout>
 
-            <RadioGroup
-                android:id="@+id/rangeGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <RadioButton
-                    android:id="@+id/allMessagesRadio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/all_messages"
-                    android:checked="true" />
-
-                <RadioButton
-                    android:id="@+id/dateRangeRadio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/date_range" />
-            </RadioGroup>
-
+            <!-- Fun facts -->
             <LinearLayout
-                android:id="@+id/dateRangeGroup"
+                android:id="@+id/funFactsSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:enabled="false"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:elevation="1dp"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone">
 
-                <Button
-                    android:id="@+id/fromDateButton"
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/from_date" />
+                    android:text="@string/fun_facts_title"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp" />
 
-                <Button
-                    android:id="@+id/toDateButton"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:id="@+id/funFactsList"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/to_date" />
+                    android:orientation="vertical" />
+
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/export_format"
-                android:textColor="#666666"
-                android:textSize="12sp" />
-
-            <RadioGroup
-                android:id="@+id/formatGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/pdfFormatRadio"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/format_pdf"
-                    android:checked="true" />
-
-                <RadioButton
-                    android:id="@+id/textFormatRadio"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/format_text" />
-            </RadioGroup>
-
-            <Button
-                android:id="@+id/exportButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/export_button" />
-
-            <ProgressBar
-                android:id="@+id/exportProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/resultText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:textAlignment="center"
-                android:visibility="gone" />
-
+            <!-- Export -->
             <LinearLayout
-                android:id="@+id/resultActions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:visibility="gone">
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:elevation="1dp"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/message_range"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <RadioGroup
+                    android:id="@+id/rangeGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/allMessagesRadio"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:background="@drawable/bg_pill_toggle"
+                        android:textColor="@color/text_pill_toggle"
+                        android:text="@string/all_messages"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/dateRangeRadio"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:background="@drawable/bg_pill_toggle"
+                        android:textColor="@color/text_pill_toggle"
+                        android:text="@string/date_range" />
+                </RadioGroup>
+
+                <LinearLayout
+                    android:id="@+id/dateRangeGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/fromDateButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/from_date" />
+
+                    <Button
+                        android:id="@+id/toDateButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/to_date" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/export_format"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <RadioGroup
+                    android:id="@+id/formatGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/pdfFormatRadio"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:background="@drawable/bg_pill_toggle"
+                        android:textColor="@color/text_pill_toggle"
+                        android:text="@string/format_pdf"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/textFormatRadio"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:background="@drawable/bg_pill_toggle"
+                        android:textColor="@color/text_pill_toggle"
+                        android:text="@string/format_text" />
+                </RadioGroup>
 
                 <Button
-                    android:id="@+id/openPdfButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="0dp"
+                    android:id="@+id/exportButton"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/open_pdf" />
+                    android:layout_marginTop="18dp"
+                    android:text="@string/export_button" />
 
-                <Button
-                    android:id="@+id/sharePdfButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="0dp"
+                <ProgressBar
+                    android:id="@+id/exportProgress"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/share_pdf" />
+                    android:layout_gravity="center"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resultText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:textAlignment="center"
+                    android:textColor="@color/text_primary"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/resultActions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/openPdfButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/open_pdf" />
+
+                    <Button
+                        android:id="@+id/sharePdfButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/share_pdf" />
+                </LinearLayout>
+
             </LinearLayout>
 
         </LinearLayout>

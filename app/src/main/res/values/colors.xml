@@ -1,7 +1,18 @@
 <resources>
     <color name="brand_primary">#2E5BFF</color>
     <color name="brand_primary_dark">#1E3FCC</color>
+    <color name="brand_primary_soft">#E8EDFF</color>
+    <color name="accent_warm">#FF7A45</color>
+
+    <color name="background">#F4F5F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_alt">#EEF0F6</color>
+    <color name="divider">#E5E7EB</color>
+
+    <color name="text_primary">#1A1D29</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
     <color name="sent_bubble">#DCE8FF</color>
     <color name="received_bubble">#F1F1F1</color>
-    <color name="background">#FAFAFA</color>
 </resources>

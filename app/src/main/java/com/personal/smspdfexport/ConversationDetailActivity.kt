@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.personal.smspdfexport.databinding.ActivityConversationDetailBinding
 import kotlinx.coroutines.Dispatchers
@@ -88,41 +89,62 @@ class ConversationDetailActivity : AppCompatActivity() {
     private fun loadStats() {
         lifecycleScope.launch {
             val zone = ZoneId.systemDefault()
-            val result = withContext(Dispatchers.IO) {
-                val timestamps = SmsRepository.getAllMessageTimestamps(applicationContext, threadId)
-                MessageStats.compute(timestamps, zone = zone)
-            }
-            if (result == null) {
-                binding.statsRow.visibility = View.GONE
-                binding.streakAnalyticsSection.visibility = View.GONE
-                return@launch
-            }
-            binding.daysSinceLastMessageValue.text = result.daysSinceLastMessage.toString()
-            binding.streakValue.text = result.streakDays.toString()
 
-            val start = result.streakStartDate
-            val end = result.streakEndDate
-            if (start == null || end == null) {
-                binding.streakAnalyticsSection.visibility = View.GONE
-                return@launch
-            }
-
-            val analytics = withContext(Dispatchers.IO) {
-                val startMillis = start.atStartOfDay(zone).toInstant().toEpochMilli()
-                val endMillis = end.atTime(LocalTime.MAX).atZone(zone).toInstant().toEpochMilli()
-                val streakMessages = SmsRepository.getMessages(applicationContext, threadId, startMillis, endMillis)
-                StreakAnalyzer.compute(
-                    messages = streakMessages,
-                    streakStartDate = start,
-                    streakEndDate = end,
+            val data = withContext(Dispatchers.IO) {
+                val allMessages = SmsRepository.getMessages(applicationContext, threadId, null, null)
+                val streak = MessageStats.compute(allMessages.map { it.date }, zone = zone)
+                val insights = ConversationInsights.compute(
+                    messages = allMessages,
                     selfLabel = getString(R.string.you),
                     resolveName = { address -> SmsRepository.resolveDisplayName(applicationContext, address) },
                     zone = zone
                 )
+                val analytics = streak?.let { s ->
+                    val start = s.streakStartDate
+                    val end = s.streakEndDate
+                    if (start != null && end != null) {
+                        StreakAnalyzer.compute(
+                            messages = allMessages,
+                            streakStartDate = start,
+                            streakEndDate = end,
+                            selfLabel = getString(R.string.you),
+                            resolveName = { address -> SmsRepository.resolveDisplayName(applicationContext, address) },
+                            zone = zone
+                        )
+                    } else null
+                }
+                Triple(streak, insights, analytics)
+            }
+            val (streak, insights, analytics) = data
+
+            if (streak == null || insights == null) {
+                binding.glanceCard.visibility = View.GONE
+                binding.streakAnalyticsSection.visibility = View.GONE
+                binding.funFactsSection.visibility = View.GONE
+                return@launch
             }
 
-            showStreakAnalytics(start, end, analytics)
+            showGlanceStats(streak, insights)
+
+            if (analytics != null && streak.streakStartDate != null && streak.streakEndDate != null) {
+                showStreakAnalytics(streak.streakStartDate, streak.streakEndDate, analytics)
+            } else {
+                binding.streakAnalyticsSection.visibility = View.GONE
+            }
+
+            showFunFacts(insights)
         }
+    }
+
+    private fun showGlanceStats(streak: MessageStats.Result, insights: ConversationInsights.Result) {
+        binding.daysSinceLastMessageValue.text = streak.daysSinceLastMessage.toString()
+        binding.streakValue.text = streak.streakDays.toString()
+        binding.longestStreakValue.text = insights.longestStreakDays.toString()
+        binding.totalMessagesValue.text = insights.totalMessages.toString()
+
+        val sinceFormat = DateTimeFormatter.ofPattern("MMM d, yyyy")
+        binding.conversationSubtitle.text = getString(R.string.texting_since, insights.firstMessageDate.format(sinceFormat))
+        binding.glanceCard.visibility = View.VISIBLE
     }
 
     private fun showStreakAnalytics(start: LocalDate, end: LocalDate, analytics: StreakAnalyzer.Analytics) {
@@ -156,6 +178,45 @@ class ConversationDetailActivity : AppCompatActivity() {
         binding.streakAnalyticsSection.visibility = View.VISIBLE
     }
 
+    private fun showFunFacts(insights: ConversationInsights.Result) {
+        binding.funFactsList.removeAllViews()
+
+        insights.busiestWeekdayLabel?.let { addFactRow(getString(R.string.busiest_day_label), it) }
+        insights.busiestHourLabel?.let { addFactRow(getString(R.string.most_active_label), it) }
+        insights.senderTotals.forEach { sender ->
+            sender.medianReplyMinutes?.let { minutes ->
+                addFactRow(
+                    getString(R.string.reply_speed_label, sender.label),
+                    ConversationInsights.formatReplyMinutes(minutes)
+                )
+            }
+        }
+
+        binding.funFactsSection.visibility = if (binding.funFactsList.childCount > 0) View.VISIBLE else View.GONE
+    }
+
+    private fun addFactRow(label: String, value: String) {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, dp(6), 0, dp(6))
+        }
+        val labelView = TextView(this).apply {
+            text = label
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setTextColor(ContextCompat.getColor(this@ConversationDetailActivity, R.color.text_secondary))
+            textSize = 13f
+        }
+        val valueView = TextView(this).apply {
+            text = value
+            setTextColor(ContextCompat.getColor(this@ConversationDetailActivity, R.color.text_primary))
+            textSize = 13f
+            setTypeface(typeface, Typeface.BOLD)
+        }
+        row.addView(labelView)
+        row.addView(valueView)
+        binding.funFactsList.addView(row)
+    }
+
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun addLegendChip(container: LinearLayout, color: Int, label: String) {
@@ -171,7 +232,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         val text = TextView(this).apply {
             text = label
             textSize = 12f
-            setTextColor(Color.parseColor("#666666"))
+            setTextColor(ContextCompat.getColor(this@ConversationDetailActivity, R.color.text_secondary))
         }
         chip.addView(dot)
         chip.addView(text)
@@ -186,11 +247,12 @@ class ConversationDetailActivity : AppCompatActivity() {
         val nameView = TextView(this).apply {
             text = label
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setTextColor(ContextCompat.getColor(this@ConversationDetailActivity, R.color.text_primary))
             if (bold) setTypeface(typeface, Typeface.BOLD)
         }
         val statsView = TextView(this).apply {
             text = getString(R.string.stat_row_detail, total, String.format(Locale.getDefault(), "%.1f", averagePerDay))
-            setTextColor(Color.parseColor("#666666"))
+            setTextColor(ContextCompat.getColor(this@ConversationDetailActivity, R.color.text_secondary))
             textSize = 13f
         }
         row.addView(nameView)
