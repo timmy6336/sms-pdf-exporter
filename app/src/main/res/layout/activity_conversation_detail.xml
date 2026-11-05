@@ -42,6 +42,14 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginBottom="16dp" />
 
+            <ProgressBar
+                android:id="@+id/statsLoadingProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp" />
+
             <!-- At a glance -->
             <LinearLayout
                 android:id="@+id/glanceCard"
@@ -51,7 +59,8 @@
                 android:background="@drawable/bg_card"
                 android:elevation="1dp"
                 android:padding="16dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="match_parent"

@@ -117,6 +117,8 @@ class ConversationDetailActivity : AppCompatActivity() {
             }
             val (streak, insights, analytics) = data
 
+            binding.statsLoadingProgress.visibility = View.GONE
+
             if (streak == null || insights == null) {
                 binding.glanceCard.visibility = View.GONE
                 binding.streakAnalyticsSection.visibility = View.GONE

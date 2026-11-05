@@ -116,41 +116,6 @@ object SmsRepository {
         return (sms + mms).sortedBy { it.date }
     }
 
-    /**
-     * Every message timestamp (millis) for a thread across the entire
-     * history, from both tables — used for the "days since"/"streak" stats,
-     * which need the whole conversation regardless of any export date range.
-     * Skips the per-row MMS part/addr lookups getMmsMessages does, since
-     * only the date matters here.
-     */
-    fun getAllMessageTimestamps(context: Context, threadId: Long): List<Long> {
-        val timestamps = mutableListOf<Long>()
-
-        context.contentResolver.query(
-            Telephony.Sms.CONTENT_URI,
-            arrayOf(Telephony.Sms.DATE),
-            "${Telephony.Sms.THREAD_ID} = ?",
-            arrayOf(threadId.toString()),
-            null
-        )?.use { c ->
-            val dateIdx = c.getColumnIndexOrThrow(Telephony.Sms.DATE)
-            while (c.moveToNext()) timestamps += c.getLong(dateIdx)
-        }
-
-        context.contentResolver.query(
-            Telephony.Mms.CONTENT_URI,
-            arrayOf(Telephony.Mms.DATE),
-            "${Telephony.Mms.THREAD_ID} = ?",
-            arrayOf(threadId.toString()),
-            null
-        )?.use { c ->
-            val dateIdx = c.getColumnIndexOrThrow(Telephony.Mms.DATE)
-            while (c.moveToNext()) timestamps += c.getLong(dateIdx) * 1000L
-        }
-
-        return timestamps
-    }
-
     private fun getSmsMessages(context: Context, threadId: Long, fromMillis: Long?, toMillis: Long?): List<SmsMessage> {
         val selectionParts = mutableListOf("${Telephony.Sms.THREAD_ID} = ?")
         val args = mutableListOf(threadId.toString())
@@ -202,6 +167,8 @@ object SmsRepository {
         return messages
     }
 
+    private class MmsRow(val id: Long, val dateMillis: Long, val isSent: Boolean)
+
     private fun getMmsMessages(context: Context, threadId: Long, fromMillis: Long?, toMillis: Long?): List<SmsMessage> {
         val selectionParts = mutableListOf("${Telephony.Mms.THREAD_ID} = ?")
         val args = mutableListOf(threadId.toString())
@@ -214,44 +181,91 @@ object SmsRepository {
             args += (toMillis / 1000).toString()
         }
 
-        val cursor = context.contentResolver.query(
+        val rows = mutableListOf<MmsRow>()
+        context.contentResolver.query(
             Telephony.Mms.CONTENT_URI,
             arrayOf(Telephony.Mms._ID, Telephony.Mms.DATE, Telephony.Mms.MESSAGE_BOX),
             selectionParts.joinToString(" AND "),
             args.toTypedArray(),
             null
-        ) ?: return emptyList()
-
-        val messages = mutableListOf<SmsMessage>()
-        cursor.use { c ->
+        )?.use { c ->
             val idIdx = c.getColumnIndexOrThrow(Telephony.Mms._ID)
             val dateIdx = c.getColumnIndexOrThrow(Telephony.Mms.DATE)
             val boxIdx = c.getColumnIndexOrThrow(Telephony.Mms.MESSAGE_BOX)
-
             while (c.moveToNext()) {
-                val mmsId = c.getLong(idIdx)
-                val dateMillis = c.getLong(dateIdx) * 1000L
-                val isSent = c.getInt(boxIdx) == Telephony.Mms.MESSAGE_BOX_SENT
-
-                val textBody = mmsTextBody(context, mmsId)
-                val hasAttachment = mmsHasNonTextPart(context, mmsId)
-                val body = when {
-                    textBody.isNotBlank() && hasAttachment -> "$textBody\n[+ picture/attachment — not included in this PDF]"
-                    textBody.isNotBlank() -> textBody
-                    hasAttachment -> "[Picture/attachment message — not included in this PDF]"
-                    else -> "[Empty MMS message]"
-                }
-
-                messages += SmsMessage(
-                    date = dateMillis,
-                    address = if (isSent) "" else mmsFromAddress(context, mmsId),
-                    body = body,
-                    isSent = isSent,
-                    typeLabel = if (isSent) "Sent" else "Received"
+                rows += MmsRow(
+                    id = c.getLong(idIdx),
+                    dateMillis = c.getLong(dateIdx) * 1000L,
+                    isSent = c.getInt(boxIdx) == Telephony.Mms.MESSAGE_BOX_SENT
                 )
             }
         }
-        return messages
+        if (rows.isEmpty()) return emptyList()
+
+        // One query covers every message's parts instead of two (text + attachment
+        // check) per message — with hundreds of MMS rows that was hundreds of extra
+        // round trips to the system process and was the main cause of slow loading.
+        val partInfo = fetchMmsPartInfo(context, rows.map { it.id })
+
+        return rows.map { row ->
+            val (textBody, hasAttachment) = partInfo[row.id] ?: ("" to false)
+            val body = when {
+                textBody.isNotBlank() && hasAttachment -> "$textBody\n[+ picture/attachment — not included in this PDF]"
+                textBody.isNotBlank() -> textBody
+                hasAttachment -> "[Picture/attachment message — not included in this PDF]"
+                else -> "[Empty MMS message]"
+            }
+
+            SmsMessage(
+                date = row.dateMillis,
+                address = if (row.isSent) "" else mmsFromAddress(context, row.id),
+                body = body,
+                isSent = row.isSent,
+                typeLabel = if (row.isSent) "Sent" else "Received"
+            )
+        }
+    }
+
+    /** mmsId -> (text body, has a non-text/attachment part), for every id in one batched query (chunked to stay under SQLite's IN-clause limit). */
+    private fun fetchMmsPartInfo(context: Context, mmsIds: List<Long>): Map<Long, Pair<String, Boolean>> {
+        val textByMms = HashMap<Long, MutableList<String>>()
+        val attachmentByMms = HashSet<Long>()
+
+        mmsIds.chunked(400).forEach { chunk ->
+            try {
+                val placeholders = chunk.joinToString(",") { "?" }
+                context.contentResolver.query(
+                    Uri.parse("content://mms/part"),
+                    arrayOf("mid", "ct", "text"),
+                    "mid IN ($placeholders)",
+                    chunk.map { it.toString() }.toTypedArray(),
+                    null
+                )?.use { c ->
+                    val midIdx = c.getColumnIndexOrThrow("mid")
+                    val ctIdx = c.getColumnIndexOrThrow("ct")
+                    val textIdx = c.getColumnIndexOrThrow("text")
+                    while (c.moveToNext()) {
+                        val mid = c.getLong(midIdx)
+                        val ct = c.getString(ctIdx)
+                        if (ct == "text/plain") {
+                            val text = c.getString(textIdx)
+                            if (!text.isNullOrBlank()) {
+                                textByMms.getOrPut(mid) { mutableListOf() } += text
+                            }
+                        } else if (ct != null && ct != "application/smil") {
+                            attachmentByMms += mid
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Fall through — missing part info just means that chunk's messages
+                // show as empty/no-attachment rather than crashing the whole load.
+            }
+        }
+
+        return mmsIds.associateWith { id ->
+            (textByMms[id]?.joinToString("\n") ?: "") to attachmentByMms.contains(id)
+        }
     }
 
     private fun mmsTextBody(context: Context, mmsId: Long): String = try {
@@ -274,26 +288,6 @@ object SmsRepository {
         } ?: ""
     } catch (e: Exception) {
         ""
-    }
-
-    private fun mmsHasNonTextPart(context: Context, mmsId: Long): Boolean = try {
-        context.contentResolver.query(
-            Uri.parse("content://mms/part"),
-            arrayOf("ct"),
-            "mid=?",
-            arrayOf(mmsId.toString()),
-            null
-        )?.use { c ->
-            val ctIdx = c.getColumnIndexOrThrow("ct")
-            var found = false
-            while (c.moveToNext()) {
-                val ct = c.getString(ctIdx)
-                if (ct != null && ct != "text/plain" && ct != "application/smil") found = true
-            }
-            found
-        } ?: false
-    } catch (e: Exception) {
-        false
     }
 
     // PduHeaders.FROM = 137, the standard MMS address-type constant for "sender".
